@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title> php images 转 html5 base64 上传到服务器--蓝锅锅DEMO   </title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="stylesheet" href="//g.alicdn.com/msui/sm/0.6.2/css/sm.min.css">
+
+		<style type="text/css">
+			body{
+				
+				position: inherit;
+				background: #fff;
+				overflow: auto;
+				
+			}
+			
+			.main{
+				margin: 25px auto;
+				max-width: 1000px;
+			}
+			.imagesbtn{
+				display: inline-block;
+				width: 200px;
+				margin: 0 auto;
+			}
+			.mainbox{
+				padding: 15px;
+				
+			}
+			
+			#img,#img1{
+				width: 200px;
+				margin-top: 25px;
+			}
+			.martop15{
+				margin-top: 15px;
+			}
+			
+			.disnone{
+				display: none;
+			}
+			.info{
+				color: #888;
+			}
+			.color888{
+				color: #888;
+			}
+			
+		</style>
+
+	</head>
+
+	<body>
+	
+	 <div class="main">
+		<div class="mainbox">
+			
+			<div class="filebox">
+					
+				 <label class="button button-fill button-danger imagesbtn" for="imagesfile">
+				 	选择图片上传
+				 </label>
+				
+	
+	    		<input type="file" style="display: none;" id="imagesfile">
+				
+			</div>
+			
+			<div class="info">
+				<p>
+					1、点击上传图片，程序会自动把图片转为base64格式
+				</p>
+				<p>
+					2、因为使用的是html5接口，只能支持html5的浏览器使用。
+				</p>
+				<p>
+					3、请勿当图片网盘使用，定期删除上传的图片
+				</p>
+			</div>
+			
+			
+			<div class="imgbox disnone">
+				<div class="martop15 color888">
+					<p>
+						1、图片已经转为base64，点击上传即可
+					</p>
+					<p>
+						2、可使用谷歌的chrome-devtools来上传接口是不是base64的
+					</p>
+					<p>
+						3、请勿当图片网盘使用，定期删除上传的图片
+					</p>
+				</div>	
+				
+				<div>
+					<img id="img" src=""/>
+				</div>
+				
+				<div class="martop15">
+					<span class="button button-fill imagesbtn" id="base64upload">上传</span>
+				</div>
+				
+				
+				
+			</div>
+			
+			<div class="success disnone">
+				<div>
+					<p class="successfont">
+					
+					</p>
+				</div>
+				<div>
+					<img id="img1" src=""/>
+					<p>
+						images url：
+						<input type="text" name="imagesurl" id="imagesurl" value="" />
+					</p>
+				</div>
+			</div>
+			
+			
+	  </div>	
+	</div>	
+
+		<script type='text/javascript' src='//g.alicdn.com/sj/lib/zepto/zepto.min.js' charset='utf-8'></script>
+		<script type='text/javascript' src='//g.alicdn.com/msui/sm/0.6.2/js/sm.min.js' charset='utf-8'></script>
+		<script type="text/javascript">
+			
+			$(function(){
+			
+				console.log(window.location);
+			
+				$("#imagesfile").change(function (){
+					
+					  var file = this.files[0];
+					
+					  console.log(file);
+					  
+					  var reader=new FileReader();
+					    reader.onload = function(){
+					    	
+					        // 通过 reader.result 来访问生成的 DataURL
+					        var url=reader.result;
+					        
+					        $(".imgbox").show();
+					        $(".info").hide();
+					        $("#img").attr('src',url);
+					        
+					        console.log(url);
+										  
+						}
+					     reader.readAsDataURL(file);
+				
+				});
+				
+				
+				$("#base64upload").click(function(){
+					
+					 $.showPreloader();
+					 
+					$.ajax({
+				         type: 'POST',
+				         url: "{:U('Base64/base64imgupload')}",
+				         data: { 
+				           'base64': $("#img").attr('src')
+				         },
+				         dataType: 'json',
+				         timeout: 50000,
+				         success: function(data){
+								
+								 $.alert(data.info);
+								
+								if ( data.status ) {
+									$(".imgbox").hide();
+									$(".success").show();
+									$(".successfont").text(data.info);
+									$("#imagesurl").val(window.location.origin+'__ROOT__/'+data.url);
+									$("#img1").attr('src','__ROOT__/'+data.url);
+								}
+								
+								$.hidePreloader();
+								
+				         },
+				         complete:function() {},
+				         error: function(xhr, type){
+				        		alert('上传超时啦，再试试');
+				        		$.hidePreloader();
+				         }
+				    });
+				
+				});
+				
+				
+				
+				
+			});
+			
+			
+			
+		</script>
+		
+		
+	</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
