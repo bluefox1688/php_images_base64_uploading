@@ -1,37 +1,152 @@
-﻿## 简介
+﻿---
+title: php图片处理之图片转为base64格式上传
+date: 2016-10-26
+tags: 
+-	php
+-	thinkphp
+-	base64
 
-ThinkPHP 是一个免费开源的，快速、简单的面向对象的 轻量级PHP开发框架 ，创立于2006年初，遵循Apache2开源协议发布，是为了敏捷WEB应用开发和简化企业应用开发而诞生的。ThinkPHP从诞生以来一直秉承简洁实用的设计原则，在保持出色的性能和至简的代码的同时，也注重易用性。并且拥有众多的原创功能和特性，在社区团队的积极参与下，在易用性、扩展性和性能方面不断优化和改进，已经成长为国内最领先和最具影响力的WEB应用开发框架，众多的典型案例确保可以稳定用于商业以及门户级的开发。
+---
+我们在开发系统时，处理图片上传是不可避免的，使用thinkphp的肯定很熟悉`import("@.ORG.UploadFile");`的上传方式。
+今天我们来讲一个使用html5 base64上传图片的方法。
+其实就是用到html5 FileReader的接口，既然是html5的，所支持的浏览器我就不多说啦，老生常谈的问题了，远离IE，珍惜生命。
+先扔个demo出来给大伙体验体验哈。
+http://t.lanchenglv.com/lan/index.php/Base64/imagesupload
+PS：主要给大伙体验的，别当网盘储存图片哈，定期自动删除图片的。
+可以大概的讲一下思路，其实也挺简单。选择了图片之后，js会先把已选的图片转化为base64格式，然后通过ajax上传到服务器端，服务器端再转化为图片，进行储存的一个过程。
+咱们先看看前端的代码。
 
-## 全面的WEB开发特性支持
+**html部分**
 
-最新的ThinkPHP为WEB应用开发提供了强有力的支持，这些支持包括：
+``` stylus
 
-*  MVC支持-基于多层模型（M）、视图（V）、控制器（C）的设计模式
-*  ORM支持-提供了全功能和高性能的ORM支持，支持大部分数据库
-*  模板引擎支持-内置了高性能的基于标签库和XML标签的编译型模板引擎
-*  RESTFul支持-通过REST控制器扩展提供了RESTFul支持，为你打造全新的URL设计和访问体验
-*  云平台支持-提供了对新浪SAE平台和百度BAE平台的强力支持，具备“横跨性”和“平滑性”，支持本地化开发和调试以及部署切换，让你轻松过渡，打造全新的开发体验。
-*  CLI支持-支持基于命令行的应用开发
-*  RPC支持-提供包括PHPRpc、HProse、jsonRPC和Yar在内远程调用解决方案
-*  MongoDb支持-提供NoSQL的支持
-*  缓存支持-提供了包括文件、数据库、Memcache、Xcache、Redis等多种类型的缓存支持
+<input type="file" id="imagesfile">
 
-## 大道至简的开发理念
+```
+**js部分**
 
-ThinkPHP从诞生以来一直秉承大道至简的开发理念，无论从底层实现还是应用开发，我们都倡导用最少的代码完成相同的功能，正是由于对简单的执着和代码的修炼，让我们长期保持出色的性能和极速的开发体验。在主流PHP开发框架的评测数据中表现卓越，简单和快速开发是我们不变的宗旨。
+``` stylus
 
-## 安全性
+$("#imagesfile").change(function (){
+					
+	  var file = this.files[0];
+      
+	 //用size属性判断文件大小不能超过5M ，前端直接判断的好处，免去服务器的压力。
+      if( file.size > 5*1024*1024 ){ 
+   			alert( "你上传的文件太大了！" ) 
+	  }
+     
+     //好东西来了
+	  var reader=new FileReader();
+	    reader.onload = function(){
+	    	
+	        // 通过 reader.result 来访问生成的 base64 DataURL
+	        var base64 = reader.result;
+			
+            //打印到控制台，按F12查看
+            console.log(base64);
+            
+            //上传图片
+            base64_uploading(base64);
+            
+		}
+	     reader.readAsDataURL(file);
+				
+});
 
-框架在系统层面提供了众多的安全特性，确保你的网站和产品安全无忧。这些特性包括：
+//AJAX上传base64
+function base64_uploading(base64Data){
+	$.ajax({
+	      type: 'POST',
+	      url: "上传接口路径",
+	      data: { 
+	        'base64': base64Data
+	      },
+	      dataType: 'json',
+	      timeout: 50000,
+	      success: function(data){
+				
+				console.log(data);
+				
+	      },
+	      complete:function() {},
+	      error: function(xhr, type){
+	     		alert('上传超时啦，再试试');
+	     		
+	      }
+	 });
 
-*  XSS安全防护
-*  表单自动验证
-*  强制数据类型转换
-*  输入数据过滤
-*  表单令牌验证
-*  防SQL注入
-*  图像上传检测
+}
 
-## 商业友好的开源协议
 
-ThinkPHP遵循Apache2开源协议发布。Apache Licence是著名的非盈利开源组织Apache采用的协议。该协议和BSD类似，鼓励代码共享和尊重原作者的著作权，同样允许代码修改，再作为开源或商业软件发布。
+```
+其实前端的代码也并不复杂，主要是使用了`new FileReader();`的接口来转化图片，`new FileReader();`还有其他的接口，想了解更多的接口使用的童鞋，自行谷歌搜索`new FileReader();`。
+接下来，那就是服务器端的代码了，上面的demo，是用thinkphp为框架编写的，但其他框架也基本通用的。
+
+``` stylus
+	function base64imgsave($img){
+		
+        //文件夹日期
+		$ymd = date("Ymd");
+		
+		 //图片路径地址	
+		$basedir = 'upload/base64/'.$ymd.'';
+		$fullpath = $basedir;
+		if(!is_dir($fullpath)){
+			mkdir($fullpath,0777,true);
+		}
+		$types = empty($types)? array('jpg', 'gif', 'png', 'jpeg'):$types;
+		
+		$img = str_replace(array('_','-'), array('/','+'), $img);
+		
+		$b64img = substr($img, 0,100);
+		
+		if(preg_match('/^(data:\s*image\/(\w+);base64,)/', $b64img, $matches)){
+			
+		$type = $matches[2];
+		if(!in_array($type, $types)){
+			return array('status'=>1,'info'=>'图片格式不正确，只支持 jpg、gif、png、jpeg哦！','url'=>'');
+		}
+		$img = str_replace($matches[1], '', $img);
+		$img = base64_decode($img);
+		$photo = '/'.md5(date('YmdHis').rand(1000, 9999)).'.'.$type;
+		file_put_contents($fullpath.$photo, $img);
+			
+			$ary['status'] = 1;
+			$ary['info'] = '保存图片成功';
+			$ary['url'] = $basedir.$photo;
+			
+			return $ary;
+		
+		}
+		
+			$ary['status'] = 0;
+			$ary['info'] = '请选择要上传的图片';
+			
+			return $ary;
+		
+	
+	}
+```
+以上就是PHP代码，原理也很简单，拿到接口上传的base64，然后再转为图片再储存。
+
+建了一个github库，需要源码体验的童鞋可以clone来体验体验。
+https://github.com/bluefox1688/php_images_base64_uploading
+使用的是thinkphp 3.2。
+php目录路径为:
+
+``` stylus
+‪Application\Home\Controller\Base64Controller.class.php
+```
+html目录路径为：
+
+``` stylus
+Application\Home\View\Base64\imagesupload.html
+```
+
+
+
+
+
+
+
