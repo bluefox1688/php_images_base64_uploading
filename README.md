@@ -8,10 +8,14 @@ tags:
 
 ---
 我们在开发系统时，处理图片上传是不可避免的，使用thinkphp的肯定很熟悉`import("@.ORG.UploadFile");`的上传方式。
+
 今天我们来讲一个使用html5 base64上传图片的方法。
+
 其实就是用到html5 FileReader的接口，既然是html5的，所支持的浏览器我就不多说啦，老生常谈的问题了，远离IE，珍惜生命。
 先扔个demo出来给大伙体验体验哈。
+
 http://t.lanchenglv.com/lan/index.php/Base64/imagesupload
+
 PS：主要给大伙体验的，别当网盘储存图片哈，定期自动删除图片的。
 可以大概的讲一下思路，其实也挺简单。选择了图片之后，js会先把已选的图片转化为base64格式，然后通过ajax上传到服务器端，服务器端再转化为图片，进行储存的一个过程。
 咱们先看看前端的代码。
@@ -132,7 +136,8 @@ function base64_uploading(base64Data){
 
 建了一个github库，需要源码体验的童鞋可以clone来体验体验。
 https://github.com/bluefox1688/php_images_base64_uploading
-使用的是thinkphp 3.2。
+
+使用的是thinkphp 3.2，无需数据库，PHP环境直接运行即可。
 php目录路径为:
 
 ``` stylus
